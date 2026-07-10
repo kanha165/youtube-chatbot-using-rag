@@ -1,379 +1,644 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>YouTube RAG Chatbot</title>
-
 <style>
+  /* ── Reset & Base ── */
+  *, *::before, *::after {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  :root {
+    --bg:        #0a0f1e;
+    --surface:   #111827;
+    --surface2:  #1a2236;
+    --border:    #1e2d45;
+    --accent:    #3b82f6;
+    --accent2:   #6366f1;
+    --green:     #22c55e;
+    --red:       #ef4444;
+    --yellow:    #f59e0b;
+    --text:      #f1f5f9;
+    --muted:     #64748b;
+    --radius:    14px;
+  }
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    height: 100vh;
+    display: flex;
+    overflow: hidden;
+  }
 
-*{
-margin:0;
-padding:0;
-box-sizing:border-box;
-font-family:Segoe UI,sans-serif;
-}
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
 
-body{
-height:100vh;
-display:flex;
-background:#0f172a;
-overflow:hidden;
-}
+  /* ══════════════════════════════
+     SIDEBAR
+  ══════════════════════════════ */
+  .sidebar {
+    width: 300px;
+    min-width: 300px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    padding: 24px 20px;
+    gap: 16px;
+  }
 
-.sidebar{
-width:320px;
-background:#111827;
-padding:20px;
-border-right:1px solid #374151;
-color:white;
-}
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+  .logo-icon {
+    width: 38px; height: 38px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .logo-text { font-size: 17px; font-weight: 700; letter-spacing: -0.3px; }
+  .logo-sub  { font-size: 11px; color: var(--muted); margin-top: 1px; }
 
-.sidebar h2{
-margin-bottom:20px;
-}
+  .divider {
+    height: 1px;
+    background: var(--border);
+    border-radius: 99px;
+  }
 
-input{
-width:100%;
-padding:12px;
-border:none;
-outline:none;
-border-radius:8px;
-margin-bottom:12px;
-}
+  .label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: -8px;
+  }
 
-button{
-width:100%;
-padding:12px;
-border:none;
-border-radius:8px;
-background:#2563eb;
-color:white;
-font-weight:bold;
-cursor:pointer;
-margin-bottom:12px;
-}
+  .url-input {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-size: 13.5px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .url-input:focus { border-color: var(--accent); }
+  .url-input::placeholder { color: var(--muted); }
 
-button:hover{
-background:#1d4ed8;
-}
+  .btn-load {
+    width: 100%;
+    padding: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: var(--radius);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .2s, transform .1s;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+  .btn-load:hover  { opacity: .9; }
+  .btn-load:active { transform: scale(.98); }
+  .btn-load:disabled { opacity: .5; cursor: not-allowed; }
 
-.status{
-margin-top:10px;
-font-size:14px;
-color:#22c55e;
-word-break:break-word;
-}
+  /* Status badge */
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 500;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    min-height: 42px;
+    transition: all .3s;
+  }
+  .status-badge.idle    { color: var(--muted); }
+  .status-badge.loading { color: var(--yellow); border-color: var(--yellow)33; }
+  .status-badge.success { color: var(--green);  border-color: var(--green)33; }
+  .status-badge.error   { color: var(--red);    border-color: var(--red)33; }
 
-.chat-area{
-flex:1;
-display:flex;
-flex-direction:column;
-}
+  .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    background: currentColor;
+  }
+  .dot.pulse {
+    animation: pulse 1.2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: .3; }
+  }
 
-.header{
-background:#111827;
-color:white;
-padding:20px;
-font-size:24px;
-font-weight:bold;
-}
+  /* Video info card */
+  .video-card {
+    display: none;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    gap: 6px;
+    flex-direction: column;
+  }
+  .video-card.show { display: flex; }
+  .video-card-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .8px; }
+  .video-card-id    { font-size: 13px; font-weight: 600; color: var(--accent); word-break: break-all; }
 
-.chat-box{
-flex:1;
-padding:20px;
-overflow-y:auto;
-display:flex;
-flex-direction:column;
-gap:15px;
-}
+  .sidebar-footer {
+    margin-top: auto;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+  }
+  .sidebar-footer a { color: var(--accent); text-decoration: none; }
+  .sidebar-footer a:hover { text-decoration: underline; }
 
-.msg{
-max-width:75%;
-padding:12px 16px;
-border-radius:12px;
-line-height:1.6;
-word-wrap:break-word;
-}
+  /* ══════════════════════════════
+     CHAT AREA
+  ══════════════════════════════ */
+  .chat-area {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
 
-.user{
-align-self:flex-end;
-background:#2563eb;
-color:white;
-}
+  /* Header */
+  .chat-header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .chat-header-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px;
+  }
+  .chat-header-title { font-size: 16px; font-weight: 700; }
+  .chat-header-sub   { font-size: 12px; color: var(--muted); margin-top: 1px; }
+  .online-pill {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 6px;
+    background: #16a34a22;
+    border: 1px solid #16a34a44;
+    border-radius: 99px;
+    padding: 4px 10px;
+    font-size: 12px;
+    color: var(--green);
+  }
+  .online-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
 
-.bot{
-align-self:flex-start;
-background:#1e293b;
-color:white;
-}
+  /* Messages */
+  .chat-box {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
 
-.input-area{
-display:flex;
-padding:15px;
-background:#111827;
-gap:10px;
-}
+  /* Welcome message */
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    gap: 12px;
+    color: var(--muted);
+    text-align: center;
+    padding: 40px 0;
+  }
+  .welcome-icon {
+    width: 64px; height: 64px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px;
+  }
+  .welcome h3 { font-size: 18px; color: var(--text); }
+  .welcome p  { font-size: 13px; max-width: 320px; line-height: 1.6; }
 
-.input-area input{
-flex:1;
-margin:0;
-}
+  /* Message bubbles */
+  .msg-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    animation: fadeUp .25s ease;
+  }
+  .msg-row.user { flex-direction: row-reverse; }
 
-.send-btn{
-width:120px;
-margin:0;
-}
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
 
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .avatar.bot  { background: linear-gradient(135deg,var(--accent),var(--accent2)); }
+  .avatar.user { background: #374151; }
+
+  .bubble {
+    max-width: 68%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 14px;
+    line-height: 1.65;
+    word-break: break-word;
+  }
+  .msg-row.bot  .bubble {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-bottom-left-radius: 4px;
+    color: var(--text);
+  }
+  .msg-row.user .bubble {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-bottom-right-radius: 4px;
+    color: #fff;
+  }
+
+  /* Typing indicator */
+  .typing .bubble {
+    padding: 14px 18px;
+  }
+  .typing-dots {
+    display: flex; gap: 5px; align-items: center;
+  }
+  .typing-dots span {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: bounce 1.2s infinite;
+  }
+  .typing-dots span:nth-child(2) { animation-delay: .2s; }
+  .typing-dots span:nth-child(3) { animation-delay: .4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); }
+    40%           { transform: translateY(-6px); }
+  }
+
+  /* ── Input area ── */
+  .input-area {
+    padding: 16px 24px;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    align-items: center;
+  }
+  .chat-input {
+    flex: 1;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    color: var(--text);
+    font-size: 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .chat-input:focus  { border-color: var(--accent); }
+  .chat-input::placeholder { color: var(--muted); }
+
+  .btn-send {
+    width: 44px; height: 44px;
+    border: none;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    color: #fff;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    transition: opacity .2s, transform .1s;
+  }
+  .btn-send:hover  { opacity: .85; }
+  .btn-send:active { transform: scale(.92); }
+  .btn-send:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 20px;
+    border-radius: 99px;
+    font-size: 13.5px;
+    font-weight: 500;
+    z-index: 999;
+    transition: transform .35s cubic-bezier(.34,1.56,.64,1), opacity .3s;
+    opacity: 0;
+    display: flex; align-items: center; gap: 8px;
+    white-space: nowrap;
+    box-shadow: 0 8px 32px #0008;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--green)55; }
+  .toast.error   { border-color: var(--red)55;   }
 </style>
 </head>
-
 <body>
 
-<div class="sidebar">
+<!-- ════════ SIDEBAR ════════ -->
+<aside class="sidebar">
 
-<h2>🎥 Video RAG</h2>
+  <div class="logo">
+    <div class="logo-icon">🎬</div>
+    <div>
+      <div class="logo-text">VideoRAG</div>
+      <div class="logo-sub">AI-Powered Video Chat</div>
+    </div>
+  </div>
 
-<input
-type="text"
-id="youtubeUrl"
-placeholder="Paste YouTube URL"
-/>
+  <div class="divider"></div>
 
-<button onclick="processVideo()">
-Load Video
-</button>
+  <span class="label">YouTube URL</span>
 
-<div class="status" id="status">
-No Video Loaded
-</div>
+  <input
+    type="text"
+    id="youtubeUrl"
+    class="url-input"
+    placeholder="https://youtube.com/watch?v=..."
+  />
 
-</div>
+  <button class="btn-load" id="btnLoad" onclick="processVideo()">
+    <span>⚡</span> Load Video
+  </button>
 
-<div class="chat-area">
+  <div class="status-badge idle" id="statusBadge">
+    <span class="dot"></span>
+    <span id="statusText">No video loaded</span>
+  </div>
 
-<div class="header">
-🎥 YouTube Video RAG Chatbot
-</div>
+  <div class="video-card" id="videoCard">
+    <span class="video-card-label">Video ID</span>
+    <span class="video-card-id" id="videoCardId">—</span>
+  </div>
 
-<div class="chat-box" id="chatBox">
+  <div class="divider"></div>
 
-<div class="msg bot">
-Paste a YouTube URL and click Load Video. Then ask questions about the video.
-</div>
+  <div class="sidebar-footer">
+    Powered by <a href="https://groq.com" target="_blank">Groq</a> &
+    <a href="https://trychroma.com" target="_blank">ChromaDB</a>
+  </div>
 
-</div>
+</aside>
 
-<div class="input-area">
+<!-- ════════ CHAT AREA ════════ -->
+<main class="chat-area">
 
-<input
-type="text"
-id="question"
-placeholder="Ask anything about the video..."
->
+  <div class="chat-header">
+    <div class="chat-header-icon">💬</div>
+    <div>
+      <div class="chat-header-title">Chat with Video</div>
+      <div class="chat-header-sub">Ask anything about the loaded video</div>
+    </div>
+    <div class="online-pill">
+      <div class="online-dot"></div>
+      Online
+    </div>
+  </div>
 
-<button
-class="send-btn"
-onclick="askQuestion()">
-Send
-</button>
+  <div class="chat-box" id="chatBox">
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">🎥</div>
+      <h3>Start a conversation</h3>
+      <p>Paste a YouTube URL on the left and click <strong>Load Video</strong>. Then ask anything about the video.</p>
+    </div>
+  </div>
 
-</div>
+  <div class="input-area">
+    <input
+      type="text"
+      id="question"
+      class="chat-input"
+      placeholder="Ask anything about the video..."
+    />
+    <button class="btn-send" id="btnSend" onclick="askQuestion()" title="Send">
+      ➤
+    </button>
+  </div>
 
-</div>
+</main>
+
+<!-- ════════ TOAST ════════ -->
+<div class="toast" id="toast"></div>
 
 <script>
+  const API = "https://youtube-chatbot-using-rag-hhzr.onrender.com";
+  let VIDEO_LOADED = false;
 
-const API = "https://youtube-chatbot-using-rag-hhzr.onrender.com/";
+  /* ── Toast ── */
+  let toastTimer;
+  function showToast(msg, type = "info") {
+    const t = document.getElementById("toast");
+    const icon = type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️";
+    t.innerHTML = `${icon} ${msg}`;
+    t.className = `toast show ${type}`;
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { t.className = "toast"; }, 3200);
+  }
 
-let VIDEO_LOADED = false;
+  /* ── Status badge ── */
+  function setStatus(state, text) {
+    const badge = document.getElementById("statusBadge");
+    const dot   = badge.querySelector(".dot");
+    badge.className = "status-badge " + state;
+    document.getElementById("statusText").textContent = text;
+    dot.className = "dot" + (state === "loading" ? " pulse" : "");
+  }
 
-function addMessage(text,type){
+  /* ── Add message ── */
+  function addMessage(text, type) {
+    const box = document.getElementById("chatBox");
 
-const chat =
-document.getElementById("chatBox");
+    // Hide welcome screen on first message
+    const welcome = document.getElementById("welcome");
+    if (welcome) welcome.remove();
 
-const div =
-document.createElement("div");
+    const row = document.createElement("div");
+    row.className = `msg-row ${type}`;
 
-div.className =
-"msg " + type;
+    const avatar = document.createElement("div");
+    avatar.className = `avatar ${type}`;
+    avatar.textContent = type === "bot" ? "🤖" : "🧑";
 
-div.innerText = text;
+    const bubble = document.createElement("div");
+    bubble.className = "bubble";
+    bubble.textContent = text;
 
-chat.appendChild(div);
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+    return row;
+  }
 
-chat.scrollTop =
-chat.scrollHeight;
-}
+  /* ── Typing indicator ── */
+  function showTyping() {
+    const box = document.getElementById("chatBox");
+    const row = document.createElement("div");
+    row.className = "msg-row bot typing";
+    row.id = "typingIndicator";
+    row.innerHTML = `
+      <div class="avatar bot">🤖</div>
+      <div class="bubble">
+        <div class="typing-dots">
+          <span></span><span></span><span></span>
+        </div>
+      </div>`;
+    box.appendChild(row);
+    box.scrollTop = box.scrollHeight;
+  }
 
-async function processVideo(){
+  function removeTyping() {
+    const t = document.getElementById("typingIndicator");
+    if (t) t.remove();
+  }
 
-const url =
-document.getElementById("youtubeUrl")
-.value
-.trim();
+  /* ── Process Video ── */
+  async function processVideo() {
+    const url = document.getElementById("youtubeUrl").value.trim();
+    if (!url) { showToast("Please enter a YouTube URL", "error"); return; }
 
-if(!url){
+    const btn = document.getElementById("btnLoad");
+    btn.disabled = true;
+    btn.innerHTML = `<span style="animation:spin 1s linear infinite;display:inline-block">⟳</span> Loading...`;
 
-alert("Enter YouTube URL");
+    setStatus("loading", "Processing video...");
 
-return;
-}
+    try {
+      const res  = await fetch(`${API}/process-video`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url })
+      });
+      const data = await res.json();
 
-try{
+      if (data.status === "success") {
+        VIDEO_LOADED = true;
+        setStatus("success", "Video loaded");
+        showVideoCard(data.video_id);
+        addMessage("✅ Video processed! You can now ask questions about it.", "bot");
+        showToast("Video loaded successfully", "success");
 
-document.getElementById("status")
-.innerHTML =
-"Processing video...";
+      } else if (data.status === "already_processed") {
+        VIDEO_LOADED = true;
+        setStatus("success", "Video already loaded");
+        showVideoCard(data.video_id);
+        addMessage("⚡ This video is already in the database. Go ahead and ask questions!", "bot");
+        showToast("Video already loaded", "success");
 
-const response =
-await fetch(
-`${API}/process-video`,
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-url:url
-})
-}
-);
+      } else {
+        setStatus("error", "Failed to load");
+        showToast(data.message || "Failed to process video", "error");
+      }
 
-const data =
-await response.json();
+    } catch (err) {
+      console.error(err);
+      setStatus("error", "Connection error");
+      showToast("Could not reach the server", "error");
+    }
 
-console.log(data);
+    btn.disabled = false;
+    btn.innerHTML = `<span>⚡</span> Load Video`;
+  }
 
-if(
-data.status !== "success" &&
-data.status !== "already_processed"
-){
+  function showVideoCard(videoId) {
+    const card = document.getElementById("videoCard");
+    document.getElementById("videoCardId").textContent = videoId;
+    card.classList.add("show");
+  }
 
-alert(
-data.message ||
-"Failed to process video"
-);
+  /* ── Ask Question ── */
+  async function askQuestion() {
+    if (!VIDEO_LOADED) {
+      showToast("Load a video first", "error");
+      return;
+    }
 
-document.getElementById("status")
-.innerHTML =
-"Failed";
+    const input    = document.getElementById("question");
+    const question = input.value.trim();
+    if (!question) return;
 
-return;
-}
+    addMessage(question, "user");
+    input.value = "";
 
-VIDEO_LOADED = true;
+    const btn = document.getElementById("btnSend");
+    btn.disabled = true;
+    showTyping();
 
-document.getElementById("status")
-.innerHTML =
-"✅ Video Loaded Successfully";
+    try {
+      const res  = await fetch(`${API}/ask`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question })
+      });
+      const data = await res.json();
 
-addMessage(
-"Video processed successfully. You can now ask questions.",
-"bot"
-);
+      removeTyping();
+      addMessage(data.answer || "Sorry, I couldn't generate a response.", "bot");
 
-}
-catch(error){
+    } catch (err) {
+      console.error(err);
+      removeTyping();
+      addMessage("⚠️ Server error. Please try again.", "bot");
+    }
 
-console.error(error);
+    btn.disabled = false;
+    input.focus();
+  }
 
-alert(
-"Video Processing Failed"
-);
+  /* ── Enter key ── */
+  document.getElementById("question").addEventListener("keypress", e => {
+    if (e.key === "Enter") askQuestion();
+  });
+  document.getElementById("youtubeUrl").addEventListener("keypress", e => {
+    if (e.key === "Enter") processVideo();
+  });
 
-document.getElementById("status")
-.innerHTML =
-"Error";
-}
-}
-
-async function askQuestion(){
-
-if(!VIDEO_LOADED){
-
-alert(
-"Load a video first"
-);
-
-return;
-}
-
-const question =
-document.getElementById("question")
-.value
-.trim();
-
-if(!question){
-return;
-}
-
-addMessage(
-question,
-"user"
-);
-
-document.getElementById("question")
-.value = "";
-
-try{
-
-const response =
-await fetch(
-`${API}/ask`,
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-question:question
-})
-}
-);
-
-const data =
-await response.json();
-
-console.log(data);
-
-const answer =
-data.answer ||
-"Sorry, I couldn't generate a response.";
-
-addMessage(
-answer,
-"bot"
-);
-
-}
-catch(error){
-
-console.error(error);
-
-addMessage(
-"Server Error",
-"bot"
-);
-}
-}
-
-document
-.getElementById("question")
-.addEventListener(
-"keypress",
-function(e){
-
-if(e.key==="Enter"){
-
-askQuestion();
-
-}
-}
-);
-
+  /* ── Spin animation ── */
+  const style = document.createElement("style");
+  style.textContent = `@keyframes spin { to { transform: rotate(360deg); } }`;
+  document.head.appendChild(style);
 </script>
-
 </body>
 </html>
