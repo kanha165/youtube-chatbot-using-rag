@@ -12,7 +12,6 @@ collection = client.get_or_create_collection(
 def _load_current_video_id():
     """
     Server restart pe ChromaDB se last stored video_id load karo.
-    Isse CURRENT_VIDEO_ID kabhi None nahi rahega agar data exist karta hai.
     """
     try:
         existing = collection.get()
@@ -58,65 +57,69 @@ def store_chunks(video_id, chunks):
         ]
     )
 
-    # Update current video id after storing
     CURRENT_VIDEO_ID = video_id
-
     return True
 
 
 def video_exists(video_id):
-
     results = collection.get(
         where={"video_id": video_id}
     )
-
     return len(results["ids"]) > 0
 
 
-SUMMARY_QUERIES = [
-    "summary",
-    "summarize",
-    "video about",
-    "what is this video about",
-    "explain this video",
-    "video summary",
-    "main topic",
-    "video kis bare me hai",
-    "video kis baare me hai"
+# Summary detect karne ke liye keywords — English + Hindi
+SUMMARY_KEYWORDS = [
+    # English
+    "summary", "summarize", "summarise", "overview",
+    "what is this video", "what is the video", "video about",
+    "explain this video", "explain the video",
+    "what does this video", "tell me about this video",
+    "what happened in", "main topic", "main points",
+    "key points", "what was discussed", "what was talked",
+    "describe this video", "describe the video",
+    # Hindi / Hinglish
+    "is video me kya", "is video mein kya",
+    "video kis bare", "video kis baare",
+    "video ka summary", "video ka matlab",
+    "video me kya hai", "video mein kya hai",
+    "batao is video", "is video ko samjhao",
+    "video explain karo", "video samjhao",
+    "kya hai is video", "kya chal raha hai",
+    "iske baare mein batao", "video ke baare mein",
 ]
 
 
-def get_context(question):
+def is_summary_question(question: str) -> bool:
+    q = question.lower()
+    return any(kw in q for kw in SUMMARY_KEYWORDS)
+
+
+def get_context(question: str) -> str:
 
     global CURRENT_VIDEO_ID
 
-    # Agar memory mein nahi hai to ChromaDB se dobara load karo
     if CURRENT_VIDEO_ID is None:
         CURRENT_VIDEO_ID = _load_current_video_id()
 
     if CURRENT_VIDEO_ID is None:
         return ""
 
-    q = question.lower()
-
-    # Summary questions - zyada chunks do
-    if any(term in q for term in SUMMARY_QUERIES):
-
+    # Summary → saare chunks do (poora transcript)
+    if is_summary_question(question):
         results = collection.get(
             where={"video_id": CURRENT_VIDEO_ID}
         )
+        docs = results.get("documents", [])
+        # Saare chunks join karo — 7000 char limit rag_service handle karega
+        return "\n".join(docs)
 
-        docs = results["documents"]
-
-        return "\n".join(docs[:10])
-
-    # Normal semantic retrieval
+    # Normal question → semantic search se top 5 relevant chunks
     results = collection.query(
         query_texts=[question],
-        n_results=4,
+        n_results=5,
         where={"video_id": CURRENT_VIDEO_ID}
     )
 
     docs = results["documents"][0]
-
     return "\n".join(docs)
