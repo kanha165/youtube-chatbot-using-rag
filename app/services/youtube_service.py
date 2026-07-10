@@ -2,38 +2,12 @@ import os
 import requests
 from urllib.parse import urlparse, parse_qs
 from dotenv import load_dotenv
-from youtube_transcript_api import YouTubeTranscriptApi
 
 load_dotenv()
 
-PROXY_USERNAME = os.getenv("PROXY_USERNAME")
-PROXY_PASSWORD = os.getenv("PROXY_PASSWORD")
+SUPADATA_API_KEY = os.getenv("SUPADATA_API_KEY")
 
-
-def _get_api_client():
-    """
-    Webshare free plan ke shared proxies use karta hai.
-    p.webshare.io:80 Webshare ka backbone rotating endpoint hai —
-    free plan mein bhi kaam karta hai.
-    """
-    if PROXY_USERNAME and PROXY_PASSWORD:
-
-        # Webshare backbone proxy — free plan ke saath kaam karta hai
-        proxy_url = (
-            f"http://{PROXY_USERNAME}:{PROXY_PASSWORD}"
-            f"@p.webshare.io:80"
-        )
-
-        session = requests.Session()
-        session.proxies = {
-            "http":  proxy_url,
-            "https": proxy_url,
-        }
-
-        return YouTubeTranscriptApi(http_client=session)
-
-    # Local development — direct connection
-    return YouTubeTranscriptApi()
+SUPADATA_URL = "https://api.supadata.ai/v1/youtube/transcript"
 
 
 def extract_video_id(url):
@@ -51,37 +25,54 @@ def extract_video_id(url):
 
 
 def get_transcript(video_id: str):
+    """
+    Supadata API se transcript fetch karo.
+    Yeh YouTube ke IP blocks se safe hai — dedicated service hai.
+    Free tier: 100 requests/month (no credit card needed)
+    """
 
-    api = _get_api_client()
+    if not SUPADATA_API_KEY:
+        raise RuntimeError(
+            "SUPADATA_API_KEY not set in environment variables."
+        )
 
-    # Hindi ya English transcript try karo
-    try:
-        transcript = api.fetch(video_id, languages=["hi", "en"])
-        return transcript
+    response = requests.get(
+        SUPADATA_URL,
+        headers={
+            "x-api-key": SUPADATA_API_KEY
+        },
+        params={
+            "videoId": video_id,
+            "text": "true"   # plain text transcript return karo
+        },
+        timeout=30
+    )
 
-    except Exception:
-        # Fallback: koi bhi available language
-        try:
-            transcript_list = api.list(video_id)
-            first = next(iter(transcript_list))
-            transcript = first.fetch()
-            return transcript
+    if response.status_code != 200:
+        raise RuntimeError(
+            f"Supadata API error {response.status_code}: {response.text}"
+        )
 
-        except Exception as e:
-            raise RuntimeError(
-                f"Could not fetch transcript for video '{video_id}': {e}"
-            )
+    data = response.json()
+
+    # Supadata text=true pe plain string return karta hai content mein
+    content = data.get("content", "")
+
+    if not content or not content.strip():
+        raise RuntimeError(
+            f"No transcript content found for video '{video_id}'"
+        )
+
+    return content
 
 
 def transcript_to_text(transcript):
-
+    """
+    Supadata already plain text deta hai — seedha return karo.
+    """
     if not transcript:
         return ""
-
-    return " ".join(
-        snippet.text
-        for snippet in transcript
-    )
+    return transcript
 
 
 def chunk_text(
