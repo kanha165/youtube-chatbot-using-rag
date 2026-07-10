@@ -8,14 +8,28 @@ collection = client.get_or_create_collection(
     name="youtube_rag"
 )
 
-CURRENT_VIDEO_ID = None
+
+def _load_current_video_id():
+    """
+    Server restart pe ChromaDB se last stored video_id load karo.
+    Isse CURRENT_VIDEO_ID kabhi None nahi rahega agar data exist karta hai.
+    """
+    try:
+        existing = collection.get()
+        if existing["metadatas"]:
+            return existing["metadatas"][0].get("video_id", None)
+    except Exception:
+        pass
+    return None
+
+
+# Startup pe ChromaDB se restore karo
+CURRENT_VIDEO_ID = _load_current_video_id()
 
 
 def store_chunks(video_id, chunks):
 
     global CURRENT_VIDEO_ID
-
-    CURRENT_VIDEO_ID = video_id
 
     if not chunks:
         raise ValueError(
@@ -24,21 +38,11 @@ def store_chunks(video_id, chunks):
 
     # Delete old video chunks
     try:
-
         existing = collection.get()
-
         if existing["ids"]:
-
-            collection.delete(
-                ids=existing["ids"]
-            )
-
+            collection.delete(ids=existing["ids"])
     except Exception as e:
-
-        print(
-            "Delete Error:",
-            e
-        )
+        print("Delete Error:", e)
 
     ids = [
         f"{video_id}_{i}"
@@ -49,12 +53,13 @@ def store_chunks(video_id, chunks):
         ids=ids,
         documents=chunks,
         metadatas=[
-            {
-                "video_id": video_id
-            }
+            {"video_id": video_id}
             for _ in chunks
         ]
     )
+
+    # Update current video id after storing
+    CURRENT_VIDEO_ID = video_id
 
     return True
 
@@ -62,9 +67,7 @@ def store_chunks(video_id, chunks):
 def video_exists(video_id):
 
     results = collection.get(
-        where={
-            "video_id": video_id
-        }
+        where={"video_id": video_id}
     )
 
     return len(results["ids"]) > 0
@@ -87,37 +90,31 @@ def get_context(question):
 
     global CURRENT_VIDEO_ID
 
+    # Agar memory mein nahi hai to ChromaDB se dobara load karo
+    if CURRENT_VIDEO_ID is None:
+        CURRENT_VIDEO_ID = _load_current_video_id()
+
     if CURRENT_VIDEO_ID is None:
         return ""
 
     q = question.lower()
 
-    # Summary questions
-    if any(
-        term in q
-        for term in SUMMARY_QUERIES
-    ):
+    # Summary questions - zyada chunks do
+    if any(term in q for term in SUMMARY_QUERIES):
 
         results = collection.get(
-            where={
-                "video_id": CURRENT_VIDEO_ID
-            }
+            where={"video_id": CURRENT_VIDEO_ID}
         )
 
         docs = results["documents"]
 
-        return "\n".join(
-            docs[:10]
-        )
+        return "\n".join(docs[:10])
 
-    # Normal retrieval
-
+    # Normal semantic retrieval
     results = collection.query(
         query_texts=[question],
         n_results=4,
-        where={
-            "video_id": CURRENT_VIDEO_ID
-        }
+        where={"video_id": CURRENT_VIDEO_ID}
     )
 
     docs = results["documents"][0]
