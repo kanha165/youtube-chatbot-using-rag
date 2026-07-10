@@ -9,14 +9,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
-
-@app.get("/")
-def home():
-    return {
-        "message": "YouTube RAG Running"
-    }
-
-
+# Middleware MUST be registered before routes
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,6 +17,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.get("/")
+def home():
+    return {
+        "message": "YouTube RAG Running"
+    }
 
 
 # Video Routes
