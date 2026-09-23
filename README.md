@@ -8,6 +8,8 @@
   <img src="https://img.shields.io/badge/ChromaDB-1.5.9-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Groq-LLM-red?style=for-the-badge" />
   <img src="https://img.shields.io/badge/RAG-Architecture-purple?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Deployed-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" />
+  <img src="https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 </p>
 
@@ -20,16 +22,20 @@
 </p>
 
 <p align="center">
-  <a href="https://youtube-chatbot-using-rag-hhzr.onrender.com" target="_blank">
-    🚀 Live Demo
+  <a href="https://youtuberagchatbot.netlify.app/" target="_blank">
+    🚀 Live Demo (Frontend)
   </a>
   &nbsp;&nbsp;|&nbsp;&nbsp;
-  <a href="#-installation--local-setup">
+  <a href="https://youtube-chatbot-using-rag-hhzr.onrender.com/docs" target="_blank">
+    📡 API Docs (Backend)
+  </a>
+  &nbsp;&nbsp;|&nbsp;&nbsp;
+  <a href="#%EF%B8%8F-installation--local-setup">
     ⚙️ Local Setup
   </a>
   &nbsp;&nbsp;|&nbsp;&nbsp;
   <a href="#-api-endpoints">
-    📡 API Docs
+    📡 API Reference
   </a>
 </p>
 
@@ -48,7 +54,7 @@
 - 🗄️ **Persistent Storage** — ChromaDB persists data across server restarts
 - 🌐 **Clean UI** — Dark-themed responsive frontend, no framework needed
 - 🔄 **Duplicate Detection** — Same video won't be re-processed if already in DB
-- 🚀 **Production Ready** — Deployed on Render with CORS support
+- 🚀 **Production Ready** — Frontend on **Netlify**, Backend API on **Render** with CORS support
 
 ---
 
@@ -64,7 +70,7 @@
 | **Database** | SQLAlchemy + PyMySQL | Video metadata storage |
 | **Frontend** | Vanilla HTML/CSS/JS | Chat UI (no framework) |
 | **Server** | Uvicorn | ASGI server |
-| **Deployment** | Render | Cloud hosting |
+| **Deployment** | Netlify + Render | Frontend on Netlify, Backend API on Render |
 | **Env Mgmt** | python-dotenv | API key management |
 
 ---
@@ -271,7 +277,8 @@ curl http://127.0.0.1:8000/
 ## 📡 API Endpoints
 
 Base URL (local): `http://127.0.0.1:8000`  
-Base URL (production): `https://youtube-chatbot-using-rag-hhzr.onrender.com`
+Base URL (production API): `https://youtube-chatbot-using-rag-hhzr.onrender.com`  
+Live Frontend: `https://youtuberagchatbot.netlify.app`
 
 ---
 
@@ -343,11 +350,15 @@ Returns the total number of chunks stored in ChromaDB.
 
 ---
 
-## 🚀 Deployment Guide (Render)
+## 🚀 Deployment Guide
 
-This project is deployed on [Render](https://render.com) (free tier).
+This project uses a **split deployment** architecture:
+- **Frontend** → [Netlify](https://netlify.com) (free, instant)
+- **Backend API** → [Render](https://render.com) (free tier)
 
-### Steps to deploy your own instance
+---
+
+### Backend — Deploy on Render
 
 **1. Push your code to GitHub**
 ```bash
@@ -376,17 +387,40 @@ DATABASE_URL        = your_mysql_connection_string
 ```
 
 **5. Deploy**
-- Click **Deploy** — Render will install deps and start the server
-- Your API will be live at `https://your-app-name.onrender.com`
+- Click **Deploy** — your API will be live at `https://your-app-name.onrender.com`
+- Test it: `https://your-app-name.onrender.com/docs`
 
-**6. Update frontend**
+> 💡 **Note:** Render free tier spins down after 15 min of inactivity. First request after sleep may take ~30 seconds.
 
-In `frontend/index.html`, update the API base URL:
+---
+
+### Frontend — Deploy on Netlify
+
+**1. Update API URL in `frontend/index.html`**
 ```js
 const API = "https://your-app-name.onrender.com";
 ```
 
-> 💡 **Note:** Render free tier spins down after 15 min of inactivity. First request after sleep may take ~30 seconds.
+**2. Deploy to Netlify**
+- Go to [netlify.com](https://netlify.com) → Add new site → Deploy manually
+- Drag and drop your `frontend/` folder into Netlify
+- Your site goes live instantly at `https://your-site.netlify.app`
+
+**OR** connect your GitHub repo and set:
+
+| Setting | Value |
+|---------|-------|
+| **Publish directory** | `frontend` |
+| **Build command** | *(leave empty)* |
+
+---
+
+### Live URLs (this project)
+| | URL |
+|-|-----|
+| 🌐 **Frontend** | [youtuberagchatbot.netlify.app](https://youtuberagchatbot.netlify.app) |
+| ⚙️ **Backend API** | [youtube-chatbot-using-rag-hhzr.onrender.com](https://youtube-chatbot-using-rag-hhzr.onrender.com) |
+| 📄 **Swagger Docs** | [/docs](https://youtube-chatbot-using-rag-hhzr.onrender.com/docs) |
 
 ---
 
