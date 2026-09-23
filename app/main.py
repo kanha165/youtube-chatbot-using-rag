@@ -20,6 +20,7 @@ app.add_middleware(
 
 
 @app.get("/")
+@app.head("/")
 def home():
     return {
         "message": "YouTube RAG Running"
