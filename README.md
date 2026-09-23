@@ -342,3 +342,50 @@ Returns the total number of chunks stored in ChromaDB.
 ```
 
 ---
+
+## 🚀 Deployment Guide (Render)
+
+This project is deployed on [Render](https://render.com) (free tier).
+
+### Steps to deploy your own instance
+
+**1. Push your code to GitHub**
+```bash
+git push origin main
+```
+
+**2. Create a new Web Service on Render**
+- Go to [render.com](https://render.com) → New → Web Service
+- Connect your GitHub repo
+
+**3. Configure the service**
+
+| Setting | Value |
+|---------|-------|
+| **Runtime** | Python 3 |
+| **Build Command** | `pip install -r requirements.txt` |
+| **Start Command** | `uvicorn app.main:app --host 0.0.0.0 --port $PORT` |
+
+**4. Add Environment Variables**
+
+In Render dashboard → Environment → Add:
+```
+GROQ_API_KEY        = your_groq_api_key
+SUPADATA_API_KEY    = your_supadata_api_key
+DATABASE_URL        = your_mysql_connection_string
+```
+
+**5. Deploy**
+- Click **Deploy** — Render will install deps and start the server
+- Your API will be live at `https://your-app-name.onrender.com`
+
+**6. Update frontend**
+
+In `frontend/index.html`, update the API base URL:
+```js
+const API = "https://your-app-name.onrender.com";
+```
+
+> 💡 **Note:** Render free tier spins down after 15 min of inactivity. First request after sleep may take ~30 seconds.
+
+---
