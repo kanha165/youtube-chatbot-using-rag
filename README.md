@@ -8,7 +8,7 @@
   <img src="https://img.shields.io/badge/ChromaDB-1.5.9-orange?style=for-the-badge" />
   <img src="https://img.shields.io/badge/Groq-LLM-red?style=for-the-badge" />
   <img src="https://img.shields.io/badge/RAG-Architecture-purple?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Deployed-Netlify-00C7B7?style=for-the-badge&logo=netlify&logoColor=white" />
+  <img src="https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white" />
   <img src="https://img.shields.io/badge/Backend-Render-46E3B7?style=for-the-badge&logo=render&logoColor=white" />
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
 </p>
@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="https://youtuberagchatbot.netlify.app/" target="_blank">
+  <a href="https://youtube-chatbot-using-53edcykvg-kanha165s-projects.vercel.app/" target="_blank">
     🚀 Live Demo (Frontend)
   </a>
   &nbsp;&nbsp;|&nbsp;&nbsp;
@@ -54,7 +54,7 @@
 - 🗄️ **Persistent Storage** — ChromaDB persists data across server restarts
 - 🌐 **Clean UI** — Dark-themed responsive frontend, no framework needed
 - 🔄 **Duplicate Detection** — Same video won't be re-processed if already in DB
-- 🚀 **Production Ready** — Frontend on **Netlify**, Backend API on **Render** with CORS support
+- 🚀 **Production Ready** — Frontend on **Vercel**, Backend API on **Render** with CORS support
 
 ---
 
@@ -70,7 +70,7 @@
 | **Database** | SQLAlchemy + PyMySQL | Video metadata storage |
 | **Frontend** | Vanilla HTML/CSS/JS | Chat UI (no framework) |
 | **Server** | Uvicorn | ASGI server |
-| **Deployment** | Netlify + Render | Frontend on Netlify, Backend API on Render |
+| **Deployment** | Vercel + Render | Frontend on Vercel, Backend API on Render |
 | **Env Mgmt** | python-dotenv | API key management |
 
 ---
@@ -278,7 +278,7 @@ curl http://127.0.0.1:8000/
 
 Base URL (local): `http://127.0.0.1:8000`  
 Base URL (production API): `https://youtube-chatbot-using-rag-hhzr.onrender.com`  
-Live Frontend: `https://youtuberagchatbot.netlify.app`
+Live Frontend: `https://youtube-chatbot-using-53edcykvg-kanha165s-projects.vercel.app`
 
 ---
 
@@ -353,7 +353,7 @@ Returns the total number of chunks stored in ChromaDB.
 ## 🚀 Deployment Guide
 
 This project uses a **split deployment** architecture:
-- **Frontend** → [Netlify](https://netlify.com) (free, instant)
+- **Frontend** → [Vercel](https://vercel.com) (free, instant)
 - **Backend API** → [Render](https://render.com) (free tier)
 
 ---
@@ -394,31 +394,33 @@ DATABASE_URL        = your_mysql_connection_string
 
 ---
 
-### Frontend — Deploy on Netlify
+### Frontend — Deploy on Vercel
 
 **1. Update API URL in `frontend/index.html`**
 ```js
 const API = "https://your-app-name.onrender.com";
 ```
 
-**2. Deploy to Netlify**
-- Go to [netlify.com](https://netlify.com) → Add new site → Deploy manually
-- Drag and drop your `frontend/` folder into Netlify
-- Your site goes live instantly at `https://your-site.netlify.app`
-
-**OR** connect your GitHub repo and set:
+**2. Deploy to Vercel**
+- Go to [vercel.com](https://vercel.com) → New Project → Import Git Repository
+- Select your GitHub repo
+- Configure:
 
 | Setting | Value |
 |---------|-------|
-| **Publish directory** | `frontend` |
+| **Framework Preset** | `Other` |
+| **Root Directory** | `frontend` |
 | **Build command** | *(leave empty)* |
+| **Output directory** | *(leave empty)* |
+
+- Click **Deploy** — live instantly at `https://your-project.vercel.app`
 
 ---
 
 ### Live URLs (this project)
 | | URL |
 |-|-----|
-| 🌐 **Frontend** | [youtuberagchatbot.netlify.app](https://youtuberagchatbot.netlify.app) |
+| 🌐 **Frontend** | [youtube-chatbot-using-53edcykvg-kanha165s-projects.vercel.app](https://youtube-chatbot-using-53edcykvg-kanha165s-projects.vercel.app) |
 | ⚙️ **Backend API** | [youtube-chatbot-using-rag-hhzr.onrender.com](https://youtube-chatbot-using-rag-hhzr.onrender.com) |
 | 📄 **Swagger Docs** | [/docs](https://youtube-chatbot-using-rag-hhzr.onrender.com/docs) |
 
