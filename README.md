@@ -51,3 +51,20 @@
 - 🚀 **Production Ready** — Deployed on Render with CORS support
 
 ---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Backend** | FastAPI | REST API framework |
+| **LLM** | Groq — `qwen/qwen3.8-27b` | Answer generation |
+| **Embeddings** | `sentence-transformers` — `all-MiniLM-L6-v2` | Text → vector conversion |
+| **Vector DB** | ChromaDB | Semantic search & storage |
+| **Transcript** | Supadata API | YouTube transcript fetching |
+| **Database** | SQLAlchemy + PyMySQL | Video metadata storage |
+| **Frontend** | Vanilla HTML/CSS/JS | Chat UI (no framework) |
+| **Server** | Uvicorn | ASGI server |
+| **Deployment** | Render | Cloud hosting |
+| **Env Mgmt** | python-dotenv | API key management |
+
+---
