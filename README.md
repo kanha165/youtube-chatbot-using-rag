@@ -389,3 +389,52 @@ const API = "https://your-app-name.onrender.com";
 > 💡 **Note:** Render free tier spins down after 15 min of inactivity. First request after sleep may take ~30 seconds.
 
 ---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how:
+
+1. Fork the repository
+2. Create a new branch: `git checkout -b feature/your-feature-name`
+3. Make your changes and commit: `git commit -m "feat: add your feature"`
+4. Push to your branch: `git push origin feature/your-feature-name`
+5. Open a Pull Request
+
+### Ideas for contributions
+- [ ] Support for multiple videos simultaneously
+- [ ] Chat history / conversation memory
+- [ ] Export chat as PDF
+- [ ] Support for playlists
+- [ ] Voice input support
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** — free to use, modify, and distribute.
+
+```
+MIT License — Copyright (c) 2026 kanha165
+```
+
+---
+
+## 👨‍💻 Author
+
+<div align="center">
+
+**kanha165**
+
+[![GitHub](https://img.shields.io/badge/GitHub-kanha165-181717?style=for-the-badge&logo=github)](https://github.com/kanha165)
+
+*Built with ❤️ using FastAPI, ChromaDB, and Groq*
+
+</div>
+
+---
+
+<div align="center">
+
+⭐ **If this project helped you, please give it a star!** ⭐
+
+</div>
