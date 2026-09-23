@@ -267,3 +267,78 @@ curl http://127.0.0.1:8000/
 ```
 
 ---
+
+## 📡 API Endpoints
+
+Base URL (local): `http://127.0.0.1:8000`  
+Base URL (production): `https://youtube-chatbot-using-rag-hhzr.onrender.com`
+
+---
+
+### `GET /`
+Health check — confirms the server is running.
+
+**Response:**
+```json
+{ "message": "YouTube RAG Running" }
+```
+
+---
+
+### `POST /process-video`
+Fetches transcript from a YouTube video, chunks it, and stores it in ChromaDB.
+
+**Request Body:**
+```json
+{ "url": "https://www.youtube.com/watch?v=VIDEO_ID" }
+```
+
+**Response (success):**
+```json
+{
+  "status": "success",
+  "video_id": "VIDEO_ID",
+  "transcript_length": 4821,
+  "total_chunks": 11,
+  "preview": "First 500 chars of transcript..."
+}
+```
+
+**Response (already processed):**
+```json
+{
+  "status": "already_processed",
+  "video_id": "VIDEO_ID",
+  "message": "Video already exists in ChromaDB"
+}
+```
+
+---
+
+### `POST /ask`
+Ask any question about the currently loaded video.
+
+**Request Body:**
+```json
+{ "question": "What is this video about?" }
+```
+
+**Response:**
+```json
+{
+  "question": "What is this video about?",
+  "answer": "This video is about..."
+}
+```
+
+---
+
+### `GET /count`
+Returns the total number of chunks stored in ChromaDB.
+
+**Response:**
+```json
+{ "documents": 11 }
+```
+
+---
