@@ -36,3 +36,18 @@
 </div>
 
 ---
+
+## ✨ Features
+
+- 🎥 **YouTube Transcript Extraction** — Fetches transcripts from any YouTube video via Supadata API (no IP blocking issues)
+- 🧠 **RAG Pipeline** — Splits transcript into chunks, embeds them, stores in ChromaDB, retrieves relevant context per question
+- 💬 **Multilingual Chat** — Ask in **English**, **Hindi**, or **Hinglish** — answers in the same language
+- 📝 **Smart Summary** — Detects summary questions and returns full transcript context automatically
+- ⚡ **Groq LLM** — Ultra-fast inference using `qwen/qwen3.8-27b` model
+- 🔍 **Semantic Search** — Top-7 relevant chunks retrieved using vector similarity
+- 🗄️ **Persistent Storage** — ChromaDB persists data across server restarts
+- 🌐 **Clean UI** — Dark-themed responsive frontend, no framework needed
+- 🔄 **Duplicate Detection** — Same video won't be re-processed if already in DB
+- 🚀 **Production Ready** — Deployed on Render with CORS support
+
+---
