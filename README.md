@@ -204,3 +204,66 @@ DATABASE_URL=mysql+pymysql://username:password@host:3306/dbname
 > ⚠️ Never commit your `.env` file. It is already in `.gitignore`.
 
 ---
+
+## ⚙️ Installation & Local Setup
+
+### 1. Clone the repository
+
+```bash
+git clone https://github.com/kanha165/youtube-chatbot-using-rag.git
+cd youtube-chatbot-using-rag
+```
+
+### 2. Create and activate virtual environment
+
+```bash
+# Windows
+python -m venv venv
+venv\Scripts\activate
+
+# macOS / Linux
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### 3. Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Create your `.env` file
+
+```bash
+# Create .env in project root and add your keys
+GROQ_API_KEY=your_groq_api_key_here
+SUPADATA_API_KEY=your_supadata_api_key_here
+DATABASE_URL=mysql+pymysql://user:pass@host:3306/dbname
+```
+
+### 5. Start the server
+
+```bash
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+### 6. Open the frontend
+
+Open `frontend/index.html` directly in your browser.
+
+> For local testing, edit line 2 of the `<script>` in `index.html`:
+> ```js
+> const API = "http://127.0.0.1:8000";
+> ```
+
+### 7. Test the API
+
+Visit `http://127.0.0.1:8000/docs` for the interactive Swagger UI.
+
+```bash
+# Quick health check
+curl http://127.0.0.1:8000/
+# → {"message": "YouTube RAG Running"}
+```
+
+---
