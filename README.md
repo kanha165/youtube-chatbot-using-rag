@@ -170,3 +170,37 @@ youtube-chatbot-using-rag/
 ```
 
 ---
+
+## 🔑 Prerequisites & Environment Variables
+
+### Prerequisites
+- Python 3.10+
+- pip
+- A free [Groq API key](https://console.groq.com) — for LLM inference
+- A free [Supadata API key](https://supadata.ai) — for YouTube transcripts (100 req/month free)
+- A MySQL database — for video metadata (optional, only needed if DB features are used)
+
+### Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+# Groq LLM
+GROQ_API_KEY=your_groq_api_key_here
+
+# Supadata (YouTube Transcript API)
+SUPADATA_API_KEY=your_supadata_api_key_here
+
+# MySQL Database (optional)
+DATABASE_URL=mysql+pymysql://username:password@host:3306/dbname
+```
+
+| Variable | Required | Where to get |
+|----------|----------|-------------|
+| `GROQ_API_KEY` | ✅ Yes | [console.groq.com](https://console.groq.com) |
+| `SUPADATA_API_KEY` | ✅ Yes | [supadata.ai](https://supadata.ai) |
+| `DATABASE_URL` | ⚠️ Optional | Your MySQL provider |
+
+> ⚠️ Never commit your `.env` file. It is already in `.gitignore`.
+
+---
