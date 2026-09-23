@@ -128,3 +128,45 @@ User asks a question
 3. **Language Detection** — Hindi/English/Hinglish question → answer in same language
 
 ---
+
+## 📁 Project Structure
+
+```
+youtube-chatbot-using-rag/
+│
+├── app/
+│   ├── main.py                    # FastAPI app entry point, CORS setup
+│   │
+│   ├── routes/
+│   │   ├── video.py               # POST /process-video, GET /count
+│   │   └── chat.py                # POST /ask
+│   │
+│   ├── services/
+│   │   ├── youtube_service.py     # Supadata API — transcript fetching & chunking
+│   │   ├── embedding_service.py   # SentenceTransformer — text → vectors
+│   │   ├── vector_service.py      # ChromaDB — store, search, retrieve chunks
+│   │   └── rag_service.py         # Groq LLM — prompt building & answer generation
+│   │
+│   ├── models/
+│   │   └── schemas.py             # Pydantic request/response models
+│   │
+│   ├── database/
+│   │   ├── db.py                  # SQLAlchemy engine & session setup
+│   │   ├── models.py              # Video ORM model
+│   │   └── __init__.py
+│   │
+│   └── utils/
+│       └── validators.py          # YouTube URL validator
+│
+├── frontend/
+│   └── index.html                 # Complete chat UI (HTML/CSS/JS)
+│
+├── chroma_db/                     # ChromaDB persistent storage (auto-created)
+│
+├── .env                           # Environment variables (not committed)
+├── .gitignore
+├── requirements.txt
+└── README.md
+```
+
+---
