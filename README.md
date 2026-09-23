@@ -68,3 +68,63 @@
 | **Env Mgmt** | python-dotenv | API key management |
 
 ---
+
+## 🏗️ Architecture & How It Works
+
+```
+User pastes YouTube URL
+        │
+        ▼
+┌─────────────────────┐
+│   FastAPI Backend   │
+│  POST /process-video│
+└────────┬────────────┘
+         │
+         ▼
+┌─────────────────────┐
+│   Supadata API      │  ← Fetches full transcript (IP-safe)
+└────────┬────────────┘
+         │  plain text transcript
+         ▼
+┌─────────────────────┐
+│   chunk_text()      │  ← Split into 1000-char chunks (200 overlap)
+└────────┬────────────┘
+         │  list of chunks
+         ▼
+┌─────────────────────┐
+│  SentenceTransformer│  ← all-MiniLM-L6-v2 embeddings
+└────────┬────────────┘
+         │  vectors
+         ▼
+┌─────────────────────┐
+│     ChromaDB        │  ← Persistent vector store
+└─────────────────────┘
+
+User asks a question
+        │
+        ▼
+┌─────────────────────┐
+│   POST /ask         │
+└────────┬────────────┘
+         │
+         ▼
+┌─────────────────────┐
+│  is_summary_question│  ← Summary? → fetch ALL chunks
+│  OR semantic search │  ← Normal? → top-7 similar chunks
+└────────┬────────────┘
+         │  context
+         ▼
+┌─────────────────────┐
+│    Groq LLM         │  ← qwen/qwen3.8-27b generates answer
+└────────┬────────────┘
+         │
+         ▼
+      Answer returned to user
+```
+
+### Flow Summary
+1. **Video Processing** — URL → transcript → chunks → embeddings → ChromaDB
+2. **Question Answering** — Question → vector search → relevant chunks → Groq LLM → answer
+3. **Language Detection** — Hindi/English/Hinglish question → answer in same language
+
+---
