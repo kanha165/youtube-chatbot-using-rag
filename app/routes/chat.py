@@ -15,8 +15,12 @@ router = APIRouter(
 )
 
 
-@router.post("/ask")
+@router.post("/ask", summary="Ask a question about the loaded video")
 def ask_question(data: ChatRequest):
+    """
+    Accepts a question and returns an AI-generated answer
+    based on the currently loaded video's transcript context.
+    """
 
     # Get context from vector DB
     context = get_context(

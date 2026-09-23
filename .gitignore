@@ -13,3 +13,7 @@ chroma_db/
 .vscode/
 
 .DS_Store
+
+# Temporary test/debug files
+test_*.py
+check_*.py

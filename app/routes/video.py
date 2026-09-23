@@ -20,8 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("/process-video")
+@router.post("/process-video", summary="Process a YouTube video and store its transcript")
 def process_video(data: VideoRequest):
+    """
+    Extracts transcript from a YouTube video, splits it into chunks,
+    and stores them in ChromaDB for semantic search.
+    """
 
     video_id = extract_video_id(
         data.url
@@ -81,9 +85,9 @@ def process_video(data: VideoRequest):
         }
 
 
-@router.get("/count")
+@router.get("/count", summary="Get total document count in ChromaDB")
 def count_documents():
-
+    """Returns the total number of transcript chunks stored in ChromaDB."""
     return {
         "documents": collection.count()
     }
