@@ -62,6 +62,7 @@ def store_chunks(video_id, chunks):
 
 
 def video_exists(video_id):
+    """Check if a video's chunks are already stored in ChromaDB."""
     results = collection.get(
         where={"video_id": video_id}
     )
@@ -114,10 +115,10 @@ def get_context(question: str) -> str:
         # Saare chunks join karo — 7000 char limit rag_service handle karega
         return "\n".join(docs)
 
-    # Normal question → semantic search se top 5 relevant chunks
+    # Normal question → semantic search se top 7 relevant chunks
     results = collection.query(
         query_texts=[question],
-        n_results=5,
+        n_results=7,
         where={"video_id": CURRENT_VIDEO_ID}
     )
 

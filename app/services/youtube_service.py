@@ -45,12 +45,12 @@ def get_transcript(video_id: str):
             "videoId": video_id,
             "text": "true"   # plain text transcript return karo
         },
-        timeout=30
+        timeout=45
     )
 
     if response.status_code != 200:
         raise RuntimeError(
-            f"Supadata API error {response.status_code}: {response.text}"
+            f"Supadata API error {response.status_code}: {response.text[:200]}"
         )
 
     data = response.json()
