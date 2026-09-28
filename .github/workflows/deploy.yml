@@ -13,10 +13,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create .env
+      - name: Deploy project
+        env:
+          ENV_FILE: ${{ secrets.KEYS }}
         run: |
-          echo "${{ secrets.KEYS }}" > .env
+          rsync -av --delete \
+            --exclude='.git' \
+            --exclude='venv' \
+            ./ /home/ubuntu/youtube-chatbot-using-rag/
 
-      - name: Check files
+          printf '%s' "$ENV_FILE" > /home/ubuntu/youtube-chatbot-using-rag/.env
+
+      - name: Check deployment
         run: |
+          cd /home/ubuntu/youtube-chatbot-using-rag
           ls -la
