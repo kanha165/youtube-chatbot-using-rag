@@ -10,9 +10,12 @@ jobs:
     runs-on: self-hosted
 
     steps:
+
+      # 1. GitHub se latest code lena
       - name: Checkout code
         uses: actions/checkout@v4
 
+      # 2. Project ko EC2 ke actual folder me deploy karna
       - name: Deploy project
         env:
           ENV_FILE: ${{ secrets.KEYS }}
@@ -24,7 +27,14 @@ jobs:
 
           printf '%s' "$ENV_FILE" > /home/ubuntu/youtube-chatbot-using-rag/.env
 
-      - name: Check deployment
+      # 3. Python dependencies update karna
+      - name: Install dependencies
         run: |
           cd /home/ubuntu/youtube-chatbot-using-rag
-          ls -la
+          /home/ubuntu/youtube-chatbot-using-rag/venv/bin/pip install -r requirements.txt
+
+      # 4. FastAPI restart karna
+      - name: Restart backend
+        run: |
+          sudo systemctl restart youtube-rag
+          sudo systemctl is-active youtube-rag
