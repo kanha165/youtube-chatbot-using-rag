@@ -13,7 +13,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Show project
+      - name: Create .env
         run: |
-          pwd
-          ls
+          echo "${{ secrets.KEYS }}" > .env
+
+      - name: Check files
+        run: |
+          ls -la
